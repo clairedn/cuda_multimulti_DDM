@@ -20,7 +20,7 @@ struct DDMparams {
 	int    frame_offset     = 0;    // number of frames to skip at start
 	int    x_off 			= 0;    // number of pixels to offset x=0 by in frame
 	int    y_off 			= 0;	// number of pixels to offset y=0 by in frame
-	int    chunk_length		= 90;   // number of frames in frame buffer, default is 30
+	int    chunk_length		= 30;   // number of frames in frame buffer, default is 30
 	int    rolling_purge	= 0;    // purge and analyse accumulators after number of frames
 
 	bool   use_webcam 		= false;
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
     conditionAssert(input_specified, "Must specify input.", true);
 
     // Angle parameter conversion (input full circle angle count, output half circle angle count for processing)
-    params.angle_count = params.enable_angle_analysis ? (params.angle_count + 1) / 2 : params.angle_count;
+    // params.angle_count = params.enable_angle_analysis ? (params.angle_count + 1) / 2 : params.angle_count;
     
     /////////////////////////////////////////////////////////////////////////////
 

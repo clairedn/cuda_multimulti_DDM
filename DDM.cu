@@ -105,14 +105,14 @@ void analyse_accums(int *scale_arr,	int scale_count,
 	float *q_pixel_radius = new float[lambda_count]; // host array to hold temporary q values for each length-scale
 
 	for (int s = 0; s < scale_count; s++) {
-		int scale = scale_arr[s];
-		int tile_count = (main_scale / scale) * (main_scale / scale);
-		int tile_size = (scale / 2 + 1) * scale;
+    int scale = scale_arr[s];
+    int tile_count = (main_scale / scale) * (main_scale / scale);
+    int tile_size = (scale / 2 + 1) * scale;
 
-		for (int i = 0; i < lambda_count; i++) {
-			q_pixel_radius[i] = static_cast<float>(scale) / (lambda_arr[i]); // key conversion between pixel movement and q radius
-		}
-
+    for (int i = 0; i < lambda_count; i++) {
+        q_pixel_radius[i] = static_cast<float>(scale) / (lambda_arr[i]);
+    }
+        
         buildAzimuthMask(d_masks, h_pixel_counts, q_pixel_radius, lambda_count, mask_tolerance, scale, scale, enable_angle_analysis, angle_count);
 
         for (int tile_idx = 0; tile_idx < tile_count; tile_idx++) { 
@@ -121,11 +121,11 @@ void analyse_accums(int *scale_arr,	int scale_count,
 
             float *d_accum_tmp = accum_list[s] + tile_size * tile_idx;
 
-            float *ISF_all_angles = analyseFFTDevice(d_accum_tmp, d_masks, h_pixel_counts, normalisation, tau_count, lambda_count, tile_count, scale, scale, enable_angle_analysis, angle_count);
+            float *ISF = analyseFFTDevice(d_accum_tmp, d_masks, h_pixel_counts, normalisation, tau_count, lambda_count, tile_count, scale, scale, enable_angle_analysis, angle_count);
             
-            writeIqtToFile(tmp_filename, ISF_all_angles, lambda_arr, lambda_count, tau_arr, tau_count, framerate, enable_angle_analysis, angle_count);
+            writeIqtToFile(tmp_filename, ISF, lambda_arr, lambda_count, tau_arr, tau_count, framerate, enable_angle_analysis, angle_count);
             
-            delete[] ISF_all_angles;
+            delete[] ISF;
         }
     }
     gpuErrorCheck(cudaFree(d_masks));
@@ -172,7 +172,7 @@ void parseChunk(unsigned char *d_raw_in,
 
 ////////////////////////////////////////////////////////////////////////////////
 //  This function handles the analysis of the FFT, i.e. handles the calculation
-//  of the difference functions. Makes use of 3-section circular buffer - see project
+//  of the difference functions. Makes use of 3-section circular buffer 
 ////////////////////////////////////////////////////////////////////////////////
 void analyseChunk(cufftComplex **d_fft_buffer1,
                   cufftComplex **d_fft_buffer2,
@@ -807,7 +807,7 @@ void runDDM(std::string file_in,
 
                     analyse_accums(scale_vector, scale_count, lambda_arr, lambda_count, 
                                  tau_vector, tau_count, tmp_frame_count, mask_tolerance, 
-                                 tmp_name, d_accum_list_cur, info.fps, window_size, w+1,
+                                 tmp_name, d_accum_list_cur, info.fps, window_size, w,
                                  enable_angle_analysis, angle_count);
 
                     verbose("  [Clearing accumulators for next batch processing]\n");
@@ -825,7 +825,7 @@ void runDDM(std::string file_in,
             // Process the accumulated data for this window
             analyse_accums(scale_vector, scale_count, lambda_arr, lambda_count, 
                          tau_vector, tau_count, frames_in_window, mask_tolerance, 
-                         file_out, d_accum_list_cur, info.fps, window_size, w+1,
+                         file_out, d_accum_list_cur, info.fps, window_size, w,
                          enable_angle_analysis, angle_count);
             
             // Reset accumulators for the next window

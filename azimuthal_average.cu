@@ -8,7 +8,6 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm> 
-#include <vector>
 
 #include "constants.hpp"
 #include "debug.hpp"
@@ -54,21 +53,22 @@ void writeIqtToFile(std::string filename,
         out_file << "\n";
 
         if (enable_angle_analysis) {
-            int full_angle_count = 2 * angle_count;  
-            for (int angle_idx = 0; angle_idx < full_angle_count; angle_idx++) {
+            //int full_angle_count = 2 * angle_count;  
+            for (int angle_idx = 0; angle_idx < angle_count; angle_idx++) {
                 
                 float angle_width = 180.0 / angle_count;
-                out_file << "# Angle section " + std::to_string(angle_idx) + 
-                    " (center angle " + std::to_string((angle_idx * angle_width - 90.0) + angle_width/2) + 
-                    " degrees, range: " + std::to_string(angle_idx * angle_width - 90.0) + "-" + 
+                out_file << "# Angle section (radial direction) " + std::to_string(angle_idx) + 
+                    " (center angle: " + std::to_string((angle_idx * angle_width - 90.0) + angle_width/2) + 
+                    " degrees, range: " + std::to_string(angle_idx * angle_width - 90.0) + " to " + 
                     std::to_string((angle_idx + 1) * angle_width - 90.0) + " degrees)\n";
 
                 // I(lambda, tau) - values
                 for (int li = 0; li < lambda_count; li++) {
                     for (int ti = 0; ti < tau_count; ti++) {
-                        int idx = (angle_idx < angle_count) 
-                                  ? (li * angle_count + angle_idx) * tau_count + ti
-                                  : (li * angle_count + (angle_idx + full_angle_count / 2) % full_angle_count) * tau_count + ti;
+                        //int idx = (angle_idx < angle_count) 
+                        //          ? (li * angle_count + angle_idx) * tau_count + ti
+                        //          : (li * angle_count + (angle_idx + full_angle_count / 2) % full_angle_count) * tau_count + ti;
+                        int idx = (li * angle_count + angle_idx) * tau_count + ti;
                         out_file << ISF[idx] << " ";
                     }
                     out_file << "\n";
@@ -122,7 +122,6 @@ void buildAzimuthMask(bool *d_mask_out,
     
     // pre-calc some values
     float tol2 = q_tolerance * q_tolerance;
-    int half_w = w / 2;
     int half_h = h / 2;
     
     int x_shift, y_shift;
@@ -141,9 +140,9 @@ void buildAzimuthMask(bool *d_mask_out,
         // Iterate over each pixel in the right half of the image
         for (int x = 0; x < (w/2 + 1); x++) {
             for (int y = 0; y < h; y++) {
-                // Calculate pixel offset from center (FFT shift)
-                x_shift = (x + half_w) % w - half_w;
-                y_shift = (y + half_h) % h - half_h;
+				y_shift = (y + half_h) % h;
+				x_shift = x;
+				y_shift -= half_h;
                 
                 r2 = x_shift * x_shift + y_shift * y_shift;
                 r2q2_ratio = r2 / q2_arr[q_idx];
@@ -153,10 +152,10 @@ void buildAzimuthMask(bool *d_mask_out,
                 
                 if (px) {  // If pixel is within the annular region
                     if (enable_angle_analysis) {
-                        // Calculate pixel angle (-π to π range)
+                        // Calculate pixel angle (-π/2 to -π/2)
                         float angle = atan2(y_shift, x_shift);
                         
-                        // Normalize angle to 0-1 range (mapping -π/2 to 0, π/2 to 1)
+                        // Normalize angle to 0-1 range 
                         float normalized_angle = (angle + M_PI/2) / M_PI;
                         
                         // Determine which angular segment the pixel belongs to
@@ -280,6 +279,7 @@ float * analyseFFTDevice(float *d_data_in,
                         }
 
                         // Normalize by pixel count and apply normalization factor
+                        val *= 2;
                         val /= static_cast<float>(h_px_count[mask_idx]);
                         val *= norm_factor;
                     }
