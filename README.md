@@ -247,8 +247,6 @@ The output file contains:
 
 ## Memory Management
 
-The program implements efficient memory handling for processing large videos:
-
 1. **Chunk Processing**: Frames are loaded and processed in chunks:
    - Default chunk size is 30 frames (`-C` option)
    - Memory allocation is 3× chunk size for triple-buffer processing
@@ -266,8 +264,6 @@ The program implements efficient memory handling for processing large videos:
 
 - **Webcam Input**: Instead of a video file, you can use a webcam as input with the `-W` option
 - **Benchmark Mode**: Test performance using random data with the `-B` option
-- **Multi-stream Processing**: Use GPU streams for faster processing (can be disabled with `-Z`)
 - **Custom Frame Rate**: Force a specific frame rate with `-F` when video metadata is incorrect
 - **Q-vector Tolerance**: Adjust tolerance factor for q-vector mask with `-t` (affects the width of azimuthal average masks)
-- **Memory Management**: Control buffer size with `-C` and `-G` options for long videos
 - **Offsets**: Set frame, x, and y offsets with `-s`, `-x`, and `-y` options for specific analysis regions 
