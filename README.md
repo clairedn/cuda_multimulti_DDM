@@ -15,16 +15,18 @@ git clone https://github.com/clairedn/cuda_multimulti_DDM.git
 cd cuda_multimulti_DDM
 
 # Compile CUDA components 
-nvcc -c azimuthal_average.cu -o azimuthal_average.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
-nvcc -c DDM.cu -o DDM.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+nvcc -c azimuthal_average.cu -o azimuthal_average.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4
+nvcc -c DDM.cu -o DDM.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4
 
 # Compile C++ components
-g++ -c main.cpp -o main.o -O3 -std=c++17 -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
-g++ -c video_reader.cpp -o video_reader.o -O3 -std=c++17 -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
-g++ -c debug.cpp -o debug.o -O3 -std=c++17 -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+g++ -c main.cpp -o main.o -O3 -std=c++17 -I/usr/local/include/opencv4
+g++ -c video_reader.cpp -o video_reader.o -O3 -std=c++17 -I/usr/local/include/opencv4
+g++ -c debug.cpp -o debug.o -O3 -std=c++17 -I/usr/local/include/opencv4
 
 # Link everything
-nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM \
+-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+
 ```
 
 It uses CUDA for GPU acceleration and supports:
