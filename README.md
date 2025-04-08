@@ -8,7 +8,7 @@
 
 ### Compilation on w1
 
-Clone the repository and compile the code （compiler warnings about C++ inheritance and function overriding in OpenCV could be ignored):
+Clone the repository and compile the code (compiler warnings about C++ inheritance and function overriding in OpenCV could be ignored):
 
 ```bash
 git clone https://github.com/clairedn/cuda_multimulti_DDM.git
