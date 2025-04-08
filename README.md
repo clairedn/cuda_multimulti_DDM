@@ -57,7 +57,7 @@ echo -e "512\n1024" > scale.txt
 
 ### Parameter Description
 
-- **tau.txt**: Contains lag times for correlation analysis. Values represent the frame separations to analyze (e.g., 1 means compare consecutive frames, 5 means compare frames that are 5 frames apart). Values are sorted in ascending order and must be positive integers.
+- **tau.txt**: Contains lag times that represent the frame separations to analyze (e.g., 1 means compare consecutive frames, 5 means compare frames that are 5 frames apart). Values are sorted in ascending order and must be positive integers.
 
 - **lambda.txt**: Contains length scales in pixels related to q-vectors by the formula q = 2π/lambda, where q is the wave vector in Fourier space. These define the spatial scales at which dynamics are probed. Values are sorted in ascending order and must be positive. The largest lambda should be smaller than the smallest scale value.
 
