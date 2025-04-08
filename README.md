@@ -1,4 +1,3 @@
-# Guidelines to run CUDA Multi Multi DDM 
 ## Installation
 
 ### Prerequisites
