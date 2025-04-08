@@ -266,11 +266,7 @@ The program implements efficient memory handling for processing large videos:
 
 - **Webcam Input**: Instead of a video file, you can use a webcam as input with the `-W` option
 - **Benchmark Mode**: Test performance using random data with the `-B` option
-- **Angle Analysis**: Enable angular sector analysis for directional information with the `-A` flag (disabled by default)
 - **Multi-stream Processing**: Use GPU streams for faster processing (can be disabled with `-Z`)
-
-## Advanced Options
-
 - **Custom Frame Rate**: Force a specific frame rate with `-F` when video metadata is incorrect
 - **Q-vector Tolerance**: Adjust tolerance factor for q-vector mask with `-t` (affects the width of azimuthal average masks)
 - **Memory Management**: Control buffer size with `-C` and `-G` options for long videos
