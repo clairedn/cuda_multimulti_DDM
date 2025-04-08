@@ -171,7 +171,7 @@ This command:
 - Uses length scales from `lambda.txt` (where q = 2π/lambda) for spatial frequency analysis
 - Uses time windows from `episode.txt` for temporal subdivision of the full video
 - Uses tile sizes from `scale.txt` for spatial subdivision of each frame
-- Enables angle analysis (`-A`) with 16 angle sections (`-n 16`)  (this feature is not enabled by default and the default angle sections without -n is 8)
+- Enables angle analysis (`-A`) with 16 angle sections (`-n 16`)  (this feature is not enabled by default and the default angle sections without `-n` is 8)
   
 Note: 
 - You can use either relative or absolute paths for all input files.
