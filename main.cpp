@@ -91,7 +91,7 @@ void printHelp() {
 			"  -y OFFSET    Set y-offset (default 0).\n"
 			"  -I           Use frame indices for tau-labels not real time.\n"
 			"  -v			Verbose mode on.\n"
-            "  -Z           Turn off multi-steam (smaller memory footprint - slower execution time).\n"
+            "  -Z           Turn off multi-stream (smaller memory footprint - slower execution time).\n"
 			"  -t INT       Set the q-vector mask tolerance - percent (integer only) (default 20 i.e. radial mask (1 - 1.2) * q).\n"
 			"  -C INT	    Set main chunk frame count, a buffer 3x chunk frame count will be allocated in memory (default 30 frames).\n"
 			"  -G SIZE      Sub-divide analysis, buffer will be output and purged every SIZE chunks\n"
