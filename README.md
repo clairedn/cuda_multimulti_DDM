@@ -40,7 +40,7 @@ It requires several input files to define parameters:
 
 ### Creating Input Files
 
-You might create the necessary input files directly using terminal commands. The following is just a random example. 
+Create the necessary input files directly using terminal commands. The following is just a random example. 
 
 ```bash
 # Create tau values (lag times)
