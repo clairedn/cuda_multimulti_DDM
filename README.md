@@ -1,4 +1,4 @@
-## Installation
+## Guideline 
 
 ### Prerequisites
 - NVIDIA GPU with CUDA support
