@@ -166,12 +166,12 @@ echo -e "512\n1024" > scale.txt
 
 This command:
 - Analyzes the video file `video.mp4` 
-- - Analyzes a total of 900 frames (`-N 900`) from the video
+- - Analyzes a total of 900 frames (`-N 900`) 
 - Uses lag times from `tau.txt` for temporal correlation analysis
 - Uses length scales from `lambda.txt` (where q = 2π/lambda) for spatial frequency analysis
 - Uses time windows from `episode.txt` for temporal subdivision of the full video
 - Uses tile sizes from `scale.txt` for spatial subdivision of each frame
-- Enables angle analysis (`-A`) with 16 angle sections (this feature is not enabled by default and the default angle sections without -n is 8)
+- Enables angle analysis (`-A`) with 16 angle sections (`-n 16`)  (this feature is not enabled by default and the default angle sections without -n is 8)
 
 ## Temporal Windows Analysis
 
