@@ -267,3 +267,45 @@ The output file contains:
 - **Custom Frame Rate**: Force a specific frame rate with `-F` when video metadata is incorrect
 - **Q-vector Tolerance**: Adjust tolerance factor for q-vector mask with `-t` (affects the width of azimuthal average masks)
 - **Offsets**: Set frame, x, and y offsets with `-s`, `-x`, and `-y` options for specific analysis regions 
+
+## Cleaning and Recompiling
+
+If you need to clean all compiled files (.o files and executable) and recompile, use the following commands:
+
+```bash
+# Clean all .o files and executable
+rm -f *.o multiDDM
+
+# Recompile
+# Compile CUDA components 
+nvcc -c azimuthal_average.cu -o azimuthal_average.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+nvcc -c DDM.cu -o DDM.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+
+# Compile C++ components
+g++ -c main.cpp -o main.o -O3 -std=c++17 -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+g++ -c video_reader.cpp -o video_reader.o -O3 -std=c++17 -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+g++ -c debug.cpp -o debug.o -O3 -std=c++17 -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+
+# Link everything
+nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM \
+-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+```
+
+If you only want to recompile a specific file (for example, if you modified DDM.cu), you can use:
+
+```bash
+# Only recompile the modified file
+rm -f DDM.o multiDDM
+nvcc -c DDM.cu -o DDM.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4 -I/usr/local/include/opencv4/opencv2
+
+# Relink
+nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM \
+-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+```
+
+To run the program after compilation:
+
+```bash
+# Example command to run the program
+./multiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt -o results/output
+```
