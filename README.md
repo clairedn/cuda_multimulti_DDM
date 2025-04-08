@@ -167,64 +167,57 @@ echo -e "512\n1024" > scale.txt
 This command:
 - Chooses the video file `video.mp4` 
 - Analyzes a total of 900 frames (`-N 900`) 
-- Uses lag times from `tau.txt` for temporal correlation analysis
-- Uses length scales from `lambda.txt` (where q = 2π/lambda) for spatial frequency analysis
+- Uses lag times from `tau.txt`
+- Uses length scales from `lambda.txt` (where q = 2π/lambda) 
 - Uses time windows from `episode.txt` for temporal subdivision of the full video
 - Uses tile sizes from `scale.txt` for spatial subdivision of each frame
 - Enables angle analysis (`-A`) with 16 angle sections (`-n 16`)  (this feature is not enabled by default and the default angle sections without `-n` is 8)
   
 Note: 
-- You can use either relative or absolute paths for all input files.
+- You can use either relative/absolute paths for all input files
 - The above example doesn't specify an output file path with `-o`. Without this parameter, output files will be generated in the current directory with names following the pattern: `episode<window_size>-<window_index>_scale<tile_size>-<tile_index>`
 - To specify an output path, add `-o /output_path/prefix` to the command. It will use this prefix for all output files.
   
 ## Temporal Windows Analysis
 
-The episode values in `episode.txt` define different time window sizes for analysis. It processes each episode value separately, following these steps:
+The episode values in `episode.txt` define different time window sizes. It processes each episode value separately, following these steps:
 
-1. **Window Division**: For each episode value (let's call it E), the program divides the total video length (N frames) into multiple windows:
+1. For each episode value (let's call it E), the program divides the total video length (N frames) into multiple windows:
    - Number of windows = ceiling(N ÷ E)
    - Each window contains E frames, except possibly the last window which may contain fewer frames if N is not a multiple of E
 
-2. **Sequential Processing**: For each window:
+2.  For each window:
    - Video is positioned to the starting frame of the window
-   - Frames within the window are loaded in chunks for memory efficiency
-   - DDM analysis is performed on frames within the window
-   - Results are accumulated in GPU memory
+   - Frames within the window are loaded in chunks for efficiency
+   - DDM is performed on frames within the window
+   - Results are accumulated 
 
-3. **Parallel Processing Example**:
-   - With total frames N = 900 and episode value E = 100:
+3. For example, with total frames N = 900 and episode value E = 100:
      - Creates 9 windows (900 ÷ 100 = 9)
      - Windows span frames 0-99, 100-199, 200-299, ..., 800-899
      - Each window is processed independently, capturing dynamics at different times in the video
 
-4. **Multiple Episode Values**:
-   - For each episode value in the file, the above process is repeated
-   - Allows comparison of dynamics across different temporal scales
+4. For each episode value in the file, the above process is repeated
+   - Allows comparison across different temporal scales
    - For example, with episode values of 100 and 300:
      - Episode 100: Creates 9 windows of 100 frames each (fine temporal resolution)
      - Episode 300: Creates 3 windows of 300 frames each (coarser temporal resolution)
 
-## Angle Analysis
+## Angular Analysis
 
-When enabled with the `-A` flag, it performs angular analysis:
+When enabled with the `-A` flag, it performs angular analysis (might be useful for anisotropy):
 
-1. **Angular Segmentation**: The 2D Fourier space is divided into angle segments:
+1. The 2D Fourier space is divided into angle segments:
    - Default is 8 segments covering half-circle (180°)
-   - Each segment represents a different direction range in real space
+   - Each segment represents a different range in real space
    - For example, with 8 segments, each covers 22.5° of the semicircle
 
-2. **Direction-Specific Dynamics**: For each q-value and angle segment:
-   - The program computes a separate ISF
-   - This captures directional dependence of dynamics (anisotropy)
-   - Useful for samples with directional motion or structure
-
-3. **Output**: Results for each angle segment are written to the output file:
+2. Results for each angle segment are written to the output file:
    - Includes angle information (center angle and range)
 
 ## Output Files
 
-The analysis generates output files with naming convention:
+The analysis generates output files with the below naming convention:
 
 ```
 episode<window_size>-<window_index>_scale<tile_size>-<tile_index>
@@ -243,7 +236,7 @@ The output file contains:
 - Line 1: Lambda values (length scales)
 - Line 2: Tau values (time delays) converted in seconds (uses video frame rate)
 - Remaining lines: ISF values for each combination of lambda and tau
-- When angle analysis is enabled, ISF are organized by angle section
+- When angle analysis is enabled, ISF values are organized by angle section
 
 ## Memory Management
 
@@ -303,9 +296,9 @@ nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM \
 -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
 ```
 
-To run the program after compilation:
+Then run the program again after compilation:
 
 ```bash
 # Example command to run the program
-./multiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt -o results/output
+./multiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt 
 ```
