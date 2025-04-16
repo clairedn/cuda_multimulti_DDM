@@ -24,7 +24,7 @@ g++ -c video_reader.cpp -o video_reader.o -O3 -std=c++17 -I/usr/local/include/op
 g++ -c debug.cpp -o debug.o -O3 -std=c++17 -I/usr/local/include/opencv4
 
 # Link everything
-nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multimultiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
 
 ```
 
@@ -128,7 +128,7 @@ echo -e "512\n1024" > scale.txt
 ```
  ~~ multiscale DDM - CUDA ~~ 
 
-  Usage ./multiDDM [OPTION]..
+  Usage ./multimultiDDM [OPTION]..
   -h           Print out this help.
    REQUIRED ARGS
   -o PATH      Output file-path.
@@ -160,7 +160,7 @@ echo -e "512\n1024" > scale.txt
 ### Example Command
 
 ```bash
-./multiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt -A -n 16
+./multimultiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt -A -n 16
 ```
 
 This command:
@@ -266,7 +266,7 @@ If you need to clean all compiled files (.o files and executable) and recompile,
 
 ```bash
 # Clean all .o files and executable
-rm -f *.o multiDDM
+rm -f *.o multimultiDDM
 
 # Recompile
 # Compile CUDA components 
@@ -279,23 +279,23 @@ g++ -c video_reader.cpp -o video_reader.o -O3 -std=c++17 -I/usr/local/include/op
 g++ -c debug.cpp -o debug.o -O3 -std=c++17 -I/usr/local/include/opencv4
 
 # Link everything
-nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multimultiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
 ```
 
 If you only want to recompile a specific file (for example, if you modified DDM.cu), you can use:
 
 ```bash
 # Only recompile the modified file
-rm -f DDM.o multiDDM
+rm -f DDM.o multimultiDDM
 nvcc -c DDM.cu -o DDM.o -O3 -std=c++17 --use_fast_math -I/usr/local/include/opencv4
 
 # Relink
-nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
+nvcc azimuthal_average.o DDM.o main.o video_reader.o debug.o -o multimultiDDM -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lcufft -lnvToolsExt
 ```
 
 Then run the program again after compilation:
 
 ```bash
 # Example command to run the program
-./multiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt 
+./multimultiDDM -f video.mp4 -N 900 -T tau.txt -Q lambda.txt -E episode.txt -S scale.txt 
 ```
