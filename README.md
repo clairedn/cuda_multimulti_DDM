@@ -104,6 +104,72 @@ The GUI automatically constructs and executes the appropriate command-line param
 *   **`pipeline.py`:** The main pipeline script. It takes arguments (usually provided by `gui.py`), runs the compiled `multimultiDDM` executable, and then optionally calls `fitting.py` for post-processing.
 *   **`fitting.py`:** Reads the output files from `multimultiDDM`, performs curve fitting on the Image Structure Function data, and can generate plots if requested.
 
+## Output File Structure
+
+### 1. Raw ISF Data Files
+
+For each analysis run, the program generates multiple ISF data files - one for each unique combination of:
+- Episode length
+- Window index
+- Scale value
+- Tile index
+
+The number of files depends on these parameters. For example, with:
+- 1 episode value (e.g., 100 frames)
+- 8 windows (total frames ÷ episode length)
+- 2 scale values (e.g., 512 and 1024)
+- 4 tiles for scale 512 (when using main scale of 1024)
+
+This would generate: 1 × 8 × (1 + 4) = 40 files.
+
+**Example ISF file list:**
+```
+output_episode100-0_scale512-0
+output_episode100-0_scale512-1
+output_episode100-0_scale512-2
+output_episode100-0_scale512-3
+output_episode100-0_scale1024-0
+output_episode100-1_scale512-0
+...
+output_episode100-7_scale1024-0
+```
+
+Each file contains the raw Image Structure Function data which shows how the image structure changes over different time delays (tau) and spatial frequencies (lambda).
+
+The file format is:
+- Line 1: Lambda values (length scales)
+- Line 2: Tau values (time delays) converted in seconds (uses video frame rate)
+- Remaining lines: ISF values for each combination of lambda and tau
+- When angle analysis is enabled, ISF values are organized by angle section
+
+### 2. Fitting Parameter Files
+
+When fitting is enabled (`--fit` option), additional files are generated with the suffix `_fit_generic_exp.txt`:
+
+```
+episode100-1_scale512-0_fit_generic_exp.txt
+episode100-1_scale512-1_fit_generic_exp.txt
+...
+```
+
+These files contain:
+- A header describing the fitting model: `I(q,τ) = A(1-e^{-(Γτ)^{β}}) + B`
+- For each angle section (if enabled):
+  - The angle description (center angle and range)
+  - A table of fitting parameters with columns:
+    - q (2π/λ): The spatial frequency
+    - A: Amplitude parameter (related to the contrast)
+    - Gamma (Γ): Characteristic rate (related to dynamics time scale)
+    - beta (β): Stretching exponent (describes deviation from simple exponential)
+    - B: Baseline offset
+
+When using different processing modes:
+- `individual`: Each ISF file gets its own fitting file
+- `tiles`: Files for the same scale but different tiles are averaged before fitting
+- `episodes`: Files for the same window size but different indices are averaged before fitting
+
+These fitting parameters provide quantitative information about the dynamics at different spatial scales, which can be related to physical properties of the sample.
+
 ## Input Files
 
 It requires several input files to define parameters:
@@ -284,29 +350,6 @@ When enabled with the `-A` flag, it performs angular analysis (might be useful f
 
 2. Results for each angle segment are written to the output file:
    - Includes angle information (center angle and range)
-
-## Output Files
-
-The analysis generates output files with the below naming convention:
-
-```
-episode<window_size>-<window_index>_scale<tile_size>-<tile_index>
-```
-
-Example: `episode100-0_scale512-0`
-
-This represents:
-- ISF values calculated for:
-  - Episode length of 100 frames
-  - Window index 0 (first time window, frames 0-99)
-  - Scale (tile size) of 512 pixels
-  - Tile index 0 (first spatial tile)
-
-The output file contains:
-- Line 1: Lambda values (length scales)
-- Line 2: Tau values (time delays) converted in seconds (uses video frame rate)
-- Remaining lines: ISF values for each combination of lambda and tau
-- When angle analysis is enabled, ISF values are organized by angle section
 
 ## Memory Management
 
