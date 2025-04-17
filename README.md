@@ -92,7 +92,7 @@ Fit parameters: ./output_episode*_scale*_fit_generic_exp.txt
 This example shows how to:
 - Process a video file with 900 frames
 - Enable angle analysis with 4 angle sections
-- Perform curve fitting with a maximum of 15 q values
+- Perform curve fitting on the first 15 q values (the largest 15 q values, corresponding to the smallest 15 lambda values)
 - Use "episodes" processing mode
 - Skip plot generation for faster processing
 
@@ -169,6 +169,8 @@ When using different processing modes:
 - `episodes`: Files for the same window size but different indices are averaged before fitting
 
 These fitting parameters provide quantitative information about the dynamics at different spatial scales, which can be related to physical properties of the sample.
+
+The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values (q = 2π/λ) are effectively sorted in descending order. Therefore, setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
 
 ## Input Files
 
