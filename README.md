@@ -5,6 +5,11 @@
 - CUDA Toolkit
 - OpenCV 4
 - C++17 compatible compiler
+- Python 3.6+ (for helper scripts)
+- Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is optional for plotting)
+  ```bash
+  pip install numpy scipy matplotlib
+  ```
 
 ### Compilation on w1
 
@@ -32,6 +37,23 @@ It uses CUDA for GPU acceleration and supports:
 - Multiple spatial scales (tile)
 - Multiple temporal scales (time window/episode length)
 - Angular analysis (optional)
+
+## Usage (Recommended Method: Interactive GUI)
+
+The simplest way to run the pipeline is using the interactive command-line tool `gui.py`.
+
+1.  **Ensure Prerequisites and Compilation are complete.**
+2.  **Run the script:**
+    ```bash
+    python gui.py
+    ```
+3.  **Follow the prompts:** The script will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
+
+## Pipeline Scripts Overview
+
+*   **`gui.py`:** An interactive command-line tool to easily configure and launch the analysis pipeline. It gathers all necessary parameters and calls `pipeline.py`.
+*   **`pipeline.py`:** The main pipeline script. It takes arguments (usually provided by `gui.py`), runs the compiled `multimultiDDM` executable, and then optionally calls `fitting.py` for post-processing.
+*   **`fitting.py`:** Reads the output files from `multimultiDDM`, performs curve fitting on the Image Structure Function data, and can generate plots if requested.
 
 ## Input Files
 
