@@ -4,7 +4,7 @@
 - NVIDIA GPU with CUDA support
 - CUDA Toolkit
 - OpenCV 4
-- Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is optional and needed for plotting)
+- Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is optional and only needed for plotting)
 
 ### Compilation on w1
 
