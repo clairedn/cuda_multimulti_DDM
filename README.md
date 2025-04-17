@@ -6,17 +6,6 @@
 - OpenCV 4
 - Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is optional and only needed for plotting)
 
-### Key Concepts and Terminology
-
-This package implements a Multi-Multi Differential Dynamic Microscopy (DDM) analysis pipeline. Some key terms used throughout this documentation:
-
-- **lambda (λ)**: Represents spatial wavelength in pixels. These are the values specified in the lambda.txt file.
-- **q**: Spatial frequency, calculated as q = 2π/λ. Higher q values correspond to smaller spatial scales.
-- **tau (τ)**: Time delay or lag time between frames, measured in frame counts or seconds when converted using the video frame rate.
-- **ISF**: Image Structure Function, which quantifies how image features change over different spatial and temporal scales.
-- **episode**: Time window size for temporal analysis, measured in frames.
-- **scale**: Tile size for spatial subdivision, measured in pixels. Must be powers of 2.
-
 ### Compilation on w1
 
 Clone the repository and compile the code (compiler warnings about C++ inheritance and function overriding in OpenCV could be ignored):
@@ -46,14 +35,14 @@ It uses CUDA for GPU acceleration and supports:
 
 ## Usage (Recommended Method: Interactive GUI)
 
-The simplest way to run the pipeline is using the interactive command-line tool `gui.py`.
+A simple way to run the pipeline is using the interactive command-line tool `gui.py`.
 
 1.  **Ensure Prerequisites and Compilation are complete.**
 2.  **Run the script:**
     ```bash
     python gui.py
     ```
-3.  **Follow the prompts:** The script will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
+3.  **Follow the prompts:** It will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
 
 ### Example GUI Session
 
@@ -111,9 +100,9 @@ The GUI automatically constructs and executes the appropriate command-line param
 
 ## Pipeline Scripts Overview
 
-*   **`gui.py`:** An interactive command-line tool to easily configure and launch the analysis pipeline. It gathers all necessary parameters and calls `pipeline.py`.
-*   **`pipeline.py`:** The main pipeline script. It takes arguments (usually provided by `gui.py`), runs the compiled `multimultiDDM` executable, and then optionally calls `fitting.py` for post-processing.
-*   **`fitting.py`:** Reads the output files from `multimultiDDM`, performs curve fitting on the Image Structure Function data, and can generate plots if requested.
+*   **`gui.py`:** An interactive command-line tool to easily configure and launch the pipeline. It gathers all necessary parameters and calls `pipeline.py`.
+*   **`pipeline.py`:** It takes arguments (provided by `gui.py`), runs the compiled `multimultiDDM` executable, and then optionally calls `fitting.py` if needed.
+*   **`fitting.py`:** Reads the output files from `multimultiDDM`, performs curve fitting on the ISF data, and generate plots if needed.
 
 ## Output File Structure
 
@@ -146,13 +135,20 @@ output_episode100-1_scale512-0
 output_episode100-7_scale1024-0
 ```
 
-Each file contains the raw Image Structure Function data which shows how the image structure changes over different time delays (tau) and spatial wavelengths (lambda).
+Each file contains the raw ISF data which shows how the image structure changes over different lag times (tau) and spatial wavelengths (lambda). This forms a 2D data matrix where:
+- Each row represents a different lambda value (or corresponding q value)
+- Each column represents a different tau value
+- Cell values are the ISF intensity at that specific combination of lambda and tau
 
 The file format is:
-- Line 1: Lambda values (length scales)
-- Line 2: Tau values (time delays) converted in seconds (uses video frame rate)
-- Remaining lines: ISF values for each combination of lambda and tau
-- When angle analysis is enabled, ISF values are organized by angle section
+- Line 1: Lambda values (spatial wavelengths in pixels)
+- Line 2: Tau values (lag times, converted to seconds using the video frame rate)
+- Remaining lines: ISF values organized as a matrix where:
+  - Each row corresponds to one lambda value
+  - Each column corresponds to one tau value
+- When angle analysis is enabled, it repeats for each angle section, with angle information headers
+
+These raw ISF data files serve as input for the fitting process, which extracts dynamic parameters from the tau-dependent behavior at each q value.
 
 ### 2. Fitting Parameter Files
 
@@ -168,31 +164,34 @@ These files contain:
 - A header describing the fitting model: `I(q,τ) = A(1-e^{-(Γτ)^β}) + B`
 - For each angle section (if enabled):
   - The angle description (center angle and range)
-  - A table of fitting parameters with columns:
-    - q (2π/λ): The spatial frequency
-    - A: Amplitude parameter (related to the contrast)
-    - Gamma (Γ): Characteristic rate (related to dynamics time scale)
-    - beta (β): Stretching exponent (describes deviation from simple exponential)
-    - B: Baseline offset
+  - A table of parameters:
+    - q (2π/λ): The spatial frequency (not a fitted parameter, but an index identifying which spatial scale the parameters below belong to)
+    - A: Amplitude parameter (related to the contrast of dynamic features)
+    - Gamma (Γ): Characteristic relaxation rate, inversely proportional to the characteristic time scale (τₒ = 1/Γ)
+    - beta (β): Stretching exponent (β=1 for simple exponential, β<1 for stretched, β>1 for compressed)
+    - B: Baseline offset (indicates non-zero baseline at long time delays)
 
 ## Fitting Parameter Files
 
-The fitting process in `fitting.py` uses a curve-fitting approach to extract dynamic parameters from the Image Structure Function data. The model used is:
+The fitting process in `fitting.py` uses a curve-fitting approach to extract dynamic parameters from the Image Structure Function data. For each spatial frequency q, the ISF is analyzed as a function of lag time (τ) using the model:
 
 ```
 I(q,τ) = A(1-e^{-(Γτ)^β}) + B
 ```
 
-Where:
-- A: Amplitude of the decay function, related to the contrast of the dynamic signal
-- Γ (Gamma): Decay rate parameter, directly related to the characteristic relaxation time (τₒ = 1/Γ)
-- β (beta): Stretching/compressing exponent, indicates whether relaxation is simple exponential (β=1) or stretched/compressed (β≠1)
-- B: Baseline offset
+Where τ is the independent variable (lag time), and the fitted parameters are:
+- A: Amplitude of the decay function, related to the contrast of the dynamic signal. Higher A values indicate stronger structural changes.
+- Γ (Gamma): Decay rate parameter, inversely proportional to the characteristic relaxation time (τₒ = 1/Γ). Higher Γ values indicate faster dynamics (shorter characteristic times).
+- β (beta): Stretching/compressing exponent, indicates whether relaxation is simple exponential (β=1) or stretched/compressed (β≠1).
+- B: Baseline offset, represents the non-decaying component at infinite time delays.
+
+Note that the fitting is performed separately for each q value. The program fits how the ISF changes with τ at fixed q values, resulting in one set of parameters (A, Γ, β, B) per q value. Therefore, if you analyze 15 q values, you will get 15 sets of fitting parameters, each describing the dynamics at a different spatial scale.
 
 The physical interpretation of these parameters is important for understanding the dynamics:
 - Higher Γ values indicate faster dynamics at that particular q value
-- β < 1 suggests stretched exponential relaxation, often seen in complex systems with multiple relaxation pathways
-- β > 1 indicates compressed exponential behavior, sometimes observed in actively driven systems
+- β < 1 suggests stretched exponential relaxation, often seen in complex systems with multiple relaxation pathways or heterogeneous dynamics
+- β > 1 indicates compressed exponential behavior, sometimes observed in actively driven systems or systems under stress
+- A/B ratio can indicate the relative contribution of dynamic vs. static components in the signal
 
 When using different processing modes:
 - `individual`: Each ISF file gets its own fitting file
@@ -252,16 +251,16 @@ The fitting process supports parallel computation across multiple CPU cores, whi
 python pipeline.py --processes 4 ... other parameters ...
 ```
 
-If `--processes` is not specified, the program will automatically use all available CPU cores. For optimal performance:
+If `--processes` is not specified, it will automatically use all available CPU cores. For optimal performance:
 - On systems with limited memory, consider using fewer cores to avoid memory pressure
-- For systems with many cores, a value of `--processes` equal to the number of physical cores (rather than logical cores) often provides the best balance of performance and resource usage
+- For systems with many CPU cores, using about 50-75% of available cores may provide better balance of performance and resource usage
 
-During processing, the pipeline displays real-time performance metrics, including:
+During processing, it displays real-time performance metrics, including:
 - Processing time for each phase (DDM analysis, fitting)
 - Overall frames per second processing rate
 - Count of processed files and remaining tasks
 
-When the verbose mode is enabled (using the `-v` flag with `multimultiDDM` or selecting 'y' for verbose output in the GUI), additional memory usage statistics are displayed:
+When the verbose mode is enabled (using the `-v` flag with `multimultiDDM` or selecting 'y' for verbose output in the GUI), additional memory usage statistics will be displayed:
 ```
 Memory Allocations Done.
 Total memory allocated
@@ -272,18 +271,18 @@ Device:
 Host:   0.012345 GB
 ```
 
-These statistics help you monitor resource usage and optimize performance for your specific hardware configuration.
+These statistics help monitor resource usage and optimize performance for specific hardware configuration.
 
 ### Memory Management
 
-The CUDA multi-multi DDM pipeline is designed to efficiently handle memory during large-scale video processing:
+The CUDA multi-multi DDM pipeline is designed to handle memory during large-scale video processing:
 
-1. **Triple-Buffer System**: The code implements a triple-buffer system to overlap computation and data transfer, maximizing GPU utilization
+1. **Triple-Buffer System**: It implements a triple-buffer system to overlap computation and data transfer, maximizing GPU utilization
 2. **Chunk-Based Processing**: Videos are processed in smaller chunks (default: 30 frames) to limit memory usage
 3. **Scale-Based Memory Allocation**: Memory is allocated according to the maximum scale and then reused for smaller scales
 4. **Stream Management**: Optional dual-stream processing for systems with sufficient GPU memory
 
-To optimize memory usage for your specific hardware:
+To optimize memory usage for specific hardware:
 
 - **For Systems with Limited GPU Memory**:
   - Reduce the chunk size with `-C` parameter (e.g., `-C 15` for smaller chunks)
@@ -298,7 +297,7 @@ To optimize memory usage for your specific hardware:
 
 ### Handling Large Video Files
 
-For very long video files, the pipeline includes a rolling purge feature that processes accumulators periodically:
+For very long video files, it includes a rolling purge feature that processes accumulators periodically:
 
 ```bash
 # Process and save results every 10 chunks
@@ -316,6 +315,8 @@ When working with multi-GB video files, consider:
 1. Splitting analysis into episodes with manageable window sizes
 2. Using the benchmark mode for initial testing to verify memory usage before committing to full analysis
 3. Monitoring system memory usage during processing
+
+> **Note:** The advanced memory management options (`-C` for chunk size, `-Z` for disabling multi-stream processing, and `-G` for rolling purge) are currently available only when using the direct command-line interface with `multimultiDDM`. These options are not included in the interactive `gui.py` tool (can be added later if needed)
 
 ## Input Files
 
@@ -491,12 +492,14 @@ The episode values in `episode.txt` define different time window sizes. It proce
 When enabled with the `-A` flag, it performs angular analysis (might be useful for anisotropy):
 
 1. The 2D Fourier space is divided into angle segments:
-   - Default is 8 segments covering half-circle (180°)
-   - Each segment represents a different range in real space
+   - Default is 8 segments covering half-circle (180°) from -90° to +90°
+   - Each segment represents a different orientation in real space
    - For example, with 8 segments, each covers 22.5° of the semicircle
+   - Segments are centered around angles from -90° to +90° (using half range due to FFT symmetry)
 
 2. Results for each angle segment are written to the output file:
-   - Includes angle information (center angle and range)
+   - Each angle section includes metadata with its center angle and range
+   - For example: "Angle section (radial direction) 0 (center angle: -78.75 degrees, range: -90.0 to -67.5 degrees)"
 
 ## Memory Management
 
