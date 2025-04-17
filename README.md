@@ -153,7 +153,7 @@ episode100-1_scale512-1_fit_generic_exp.txt
 ```
 
 These files contain:
-- A header describing the fitting model: `I(q,τ) = A(1-e^{-(Γτ)^{β}}) + B`
+- A header describing the fitting model: `I(q,τ) = A(1-e^{-(Γτ)^β}) + B`
 - For each angle section (if enabled):
   - The angle description (center angle and range)
   - A table of fitting parameters with columns:
@@ -162,6 +162,34 @@ These files contain:
     - Gamma (Γ): Characteristic rate (related to dynamics time scale)
     - beta (β): Stretching exponent (describes deviation from simple exponential)
     - B: Baseline offset
+
+## Fitting Parameter Files
+
+The fitting process in `fitting.py` uses a curve-fitting approach to extract dynamic parameters from the Image Structure Function data. The model used is:
+
+```
+I(q,τ) = A(1-e^{-(Γτ)^β}) + B
+```
+
+Where:
+- A: Amplitude of the decay function, related to the contrast of the dynamic signal
+- Γ (Gamma): Decay rate parameter, directly related to the characteristic relaxation time (τₒ = 1/Γ)
+- β (beta): Stretching/compressing exponent, indicates whether relaxation is simple exponential (β=1) or stretched/compressed (β≠1)
+- B: Baseline offset
+
+The physical interpretation of these parameters is important for understanding the dynamics:
+- Higher Γ values indicate faster dynamics at that particular q value
+- β < 1 suggests stretched exponential relaxation, often seen in complex systems with multiple relaxation pathways
+- β > 1 indicates compressed exponential behavior, sometimes observed in actively driven systems
+
+When using different processing modes:
+- `individual`: Each ISF file gets its own fitting file
+- `tiles`: Files for the same scale but different tiles are averaged before fitting
+- `episodes`: Files for the same window size but different indices are averaged before fitting
+
+These fitting parameters provide quantitative information about the dynamics at different spatial scales, which can be related to physical properties of the sample.
+
+The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values (q = 2π/λ) are effectively sorted in descending order. Therefore, setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
 
 ## Processing Modes
 
@@ -172,6 +200,7 @@ When using `fitting.py` (either directly or through the pipeline), there are thr
 - **File Processing**: Generates an independent fitting file for each ISF file
 - **Use Case**: When you need to preserve all details and analyze the unique dynamic properties of each time window and spatial region
 - **Output File Count**: Same as the number of input ISF files
+- **Output Naming**: Original filename with `_fit_generic_exp` suffix
 
 ### 2. `tiles` Mode
 - **Working Principle**: Averages ISF files with the same scale but different tile positions
@@ -179,6 +208,7 @@ When using `fitting.py` (either directly or through the pipeline), there are thr
 - **Averaging Strategy**: Groups by `episode<value>-<index>_scale<value>`, ignoring tile index differences
 - **Use Case**: When your sample is spatially homogeneous and you want to reduce spatial sampling noise
 - **Output File Count**: `Number of time windows × Number of scale values`
+- **Output Naming**: `episode<value>-<index>_scale<value>_avg_tiles_fit_generic_exp`
 
 ### 3. `episodes` Mode
 - **Working Principle**: Averages ISF files with the same window size (episode value) but different window indices
@@ -186,6 +216,7 @@ When using `fitting.py` (either directly or through the pipeline), there are thr
 - **Averaging Strategy**: Groups by `episode<value>_scale<value>-<index>`, ignoring window index differences
 - **Use Case**: When your sample is temporally stationary and you want to increase statistical reliability
 - **Output File Count**: `Number of window size values × Number of scale values × Number of tiles`
+- **Output Naming**: `episode<value>_scale<value>-<index>_avg_episodes_fit_generic_exp`
 
 ### Choosing the Right Processing Mode
 
@@ -197,6 +228,70 @@ You can select the processing mode through the GUI or using the command-line par
 ```bash
 python pipeline.py --mode episodes ... other parameters ...
 ```
+
+## Performance Optimization
+
+### Multi-CPU Processing
+
+The fitting process supports parallel computation across multiple CPU cores, which can significantly speed up the analysis, especially for large datasets or when processing many files:
+
+```bash
+# Example: Use 4 CPU cores for fitting
+python pipeline.py --processes 4 ... other parameters ...
+```
+
+If `--processes` is not specified, the program will automatically use all available CPU cores. For optimal performance:
+- On systems with limited memory, consider using fewer cores to avoid memory pressure
+- For systems with many cores, a value of `--processes` equal to the number of physical cores (rather than logical cores) often provides the best balance of performance and resource usage
+
+During processing, the pipeline displays real-time performance metrics, including:
+- Processing time for each phase (DDM analysis, fitting)
+- Overall frames per second processing rate
+- Memory usage statistics
+- Count of processed files and remaining tasks
+
+### Memory Management
+
+The CUDA multi-multi DDM pipeline is designed to efficiently handle memory during large-scale video processing:
+
+1. **Triple-Buffer System**: The code implements a triple-buffer system to overlap computation and data transfer, maximizing GPU utilization
+2. **Chunk-Based Processing**: Videos are processed in smaller chunks (default: 30 frames) to limit memory usage
+3. **Scale-Based Memory Allocation**: Memory is allocated according to the maximum scale and then reused for smaller scales
+4. **Stream Management**: Optional dual-stream processing for systems with sufficient GPU memory
+
+To optimize memory usage for your specific hardware:
+
+- **For Systems with Limited GPU Memory**:
+  - Reduce the chunk size with `-C` parameter (e.g., `-C 15` for smaller chunks)
+  - Disable multi-stream processing with `-Z` flag
+  - Process videos with lower resolution or smaller frames if possible
+  - Consider using the rolling purge option for very long videos
+
+- **For High-Performance Systems**:
+  - Increase chunk size for better efficiency (e.g., `-C 60`)
+  - Keep multi-stream enabled for maximum throughput
+  - Utilize more CPU cores for fitting with `--processes`
+
+### Handling Large Video Files
+
+For very long video files, the pipeline includes a rolling purge feature that processes accumulators periodically:
+
+```bash
+# Process and save results every 10 chunks
+./multimultiDDM -f video.mp4 ... other parameters ... -G 10
+```
+
+This feature:
+- Reduces peak memory usage by periodically clearing accumulators
+- Allows for checkpointing during long-running analyses
+- Generates intermediate results that can be analyzed before the entire video is processed
+
+Combined with appropriate chunk sizing, the rolling purge option makes it possible to process video files of arbitrary length, limited only by storage capacity rather than memory.
+
+When working with multi-GB video files, consider:
+1. Splitting analysis into episodes with manageable window sizes
+2. Using the benchmark mode for initial testing to verify memory usage before committing to full analysis
+3. Monitoring system memory usage during processing
 
 ## Input Files
 
