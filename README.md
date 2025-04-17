@@ -247,8 +247,20 @@ If `--processes` is not specified, the program will automatically use all availa
 During processing, the pipeline displays real-time performance metrics, including:
 - Processing time for each phase (DDM analysis, fitting)
 - Overall frames per second processing rate
-- Memory usage statistics
 - Count of processed files and remaining tasks
+
+When the verbose mode is enabled (using the `-v` flag with `multimultiDDM` or selecting 'y' for verbose output in the GUI), additional memory usage statistics are displayed:
+```
+Memory Allocations Done.
+Total memory allocated
+Device:
+    Explicitly allocated:    0.123456 GB 
+    Total allocated:         0.234567 GB
+    Free memory remaining:   7.654321 GB
+Host:   0.012345 GB
+```
+
+These statistics help you monitor resource usage and optimize performance for your specific hardware configuration.
 
 ### Memory Management
 
