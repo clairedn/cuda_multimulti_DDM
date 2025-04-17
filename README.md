@@ -6,6 +6,17 @@
 - OpenCV 4
 - Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is optional and only needed for plotting)
 
+### Key Concepts and Terminology
+
+This package implements a Multi-Multi Differential Dynamic Microscopy (DDM) analysis pipeline. Some key terms used throughout this documentation:
+
+- **lambda (λ)**: Represents spatial wavelength in pixels. These are the values specified in the lambda.txt file.
+- **q**: Spatial frequency, calculated as q = 2π/λ. Higher q values correspond to smaller spatial scales.
+- **tau (τ)**: Time delay or lag time between frames, measured in frame counts or seconds when converted using the video frame rate.
+- **ISF**: Image Structure Function, which quantifies how image features change over different spatial and temporal scales.
+- **episode**: Time window size for temporal analysis, measured in frames.
+- **scale**: Tile size for spatial subdivision, measured in pixels. Must be powers of 2.
+
 ### Compilation on w1
 
 Clone the repository and compile the code (compiler warnings about C++ inheritance and function overriding in OpenCV could be ignored):
@@ -135,7 +146,7 @@ output_episode100-1_scale512-0
 output_episode100-7_scale1024-0
 ```
 
-Each file contains the raw Image Structure Function data which shows how the image structure changes over different time delays (tau) and spatial frequencies (lambda).
+Each file contains the raw Image Structure Function data which shows how the image structure changes over different time delays (tau) and spatial wavelengths (lambda).
 
 The file format is:
 - Line 1: Lambda values (length scales)
@@ -190,7 +201,7 @@ When using different processing modes:
 
 These fitting parameters provide quantitative information about the dynamics at different spatial scales, which can be related to physical properties of the sample.
 
-The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values (q = 2π/λ) are effectively sorted in descending order. So setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
+The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values are effectively sorted in descending order. So setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
 
 ## Processing Modes
 
@@ -318,7 +329,7 @@ Create the necessary input files directly using terminal commands. The following
 # Create tau values (lag times)
 echo -e "1\n2\n3\n4\n5" > tau.txt
 
-# Create lambda values (length scales, where q = 2π/lambda)
+# Create lambda values (length scales)
 echo -e "2\n10\n50\n70\n100" > lambda.txt
 
 # Create episode values (time windows)
@@ -332,7 +343,7 @@ echo -e "512\n1024" > scale.txt
 
 - **tau.txt**: Contains lag times that represent the frame separations to analyze (e.g., 1 means compare consecutive frames, 5 means compare frames that are 5 frames apart). Values are sorted in ascending order and must be positive integers.
 
-- **lambda.txt**: Contains length scales in pixels related to q-vectors by the formula q = 2π/lambda, where q is the wave vector in Fourier space. These define the spatial scales at which dynamics are probed. Values are sorted in ascending order and must be positive. The largest lambda should be smaller than the smallest scale value.
+- **lambda.txt**: Contains length scales in pixels that define the spatial scales at which dynamics are probed. Values are sorted in ascending order and must be positive. The largest lambda should be smaller than the smallest scale value.
 
 - **episode.txt**: Contains time window sizes for temporal analysis. Each value defines a window size in frames. For each window size, it:
   - Divides the total video into multiple windows of that size
@@ -378,7 +389,7 @@ echo -e "512\n1024" > scale.txt
    - Accumulates results for all available frame pairs
 
 9. For each lambda value in `lambda.txt`:
-   - Calculates q = 2π/lambda for spatial frequency analysis
+   - Calculates the corresponding q value for spatial frequency analysis
    - Creates azimuthal average masks in Fourier space for each q-value
 
 10. **Angular Analysis** (if enabled):
@@ -440,7 +451,7 @@ This command:
 - Chooses the video file `video.mp4` 
 - Analyzes a total of 900 frames (`-N 900`) 
 - Uses lag times from `tau.txt`
-- Uses length scales from `lambda.txt` (where q = 2π/lambda) 
+- Uses length scales from `lambda.txt`
 - Uses time windows from `episode.txt` for temporal subdivision of the full video
 - Uses tile sizes from `scale.txt` for spatial subdivision of each frame
 - Enables angle analysis (`-A`) with 16 angle sections (`-n 16`)  (this feature is not enabled by default and the default angle sections without `-n` is 8)
