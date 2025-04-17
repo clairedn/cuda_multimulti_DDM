@@ -4,7 +4,7 @@
 - NVIDIA GPU with CUDA support
 - CUDA Toolkit
 - OpenCV 4
-- Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is only needed for plotting)
+- Python Libraries: `numpy`, `scipy`, `matplotlib` (matplotlib is optional for plotting)
 
 ### Compilation on w1
 
@@ -42,7 +42,61 @@ The simplest way to run the pipeline is using the interactive command-line tool 
     ```bash
     python gui.py
     ```
-3.  **Follow the prompts:** It will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
+3.  **Follow the prompts:** The script will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
+
+### Example GUI Session
+
+Below is an example of a complete interactive session with `gui.py`, showing the prompts and user inputs:
+
+```
+=== multimultiDDM Analysis Tool ===
+Video file path: video.mp4
+Lambda file path: lambda.txt
+Tau file path: tau.txt
+Scale file path: scale.txt
+Episode file path: episode.txt
+Number of frames (required): 900
+Show more options? (y/n): y
+Output prefix [output_]: 
+Frame offset [0]: 
+X offset [0]: 
+Y offset [0]: 
+Enable angle analysis? (y/n): y
+Number of angle sections [8]: 4
+Perform curve fitting? (y/n): y
+Maximum q values to process [20]: 15
+Processing mode (individual/tiles/episodes) [individual]: episodes
+Process specific angle (leave empty for all): 
+Generate plots? (y/n): n
+Output directory (leave empty for current directory): 
+Number of CPU cores for processing (leave empty for all available): 
+Verbose output? (y/n): n
+
+Executing command: python pipeline.py --input video.mp4 --lambda-file lambda.txt --tau-file tau.txt --scale-file scale.txt --episode-file episode.txt --frames 900 --output output_ --enable-angle --angle-count 4 --fit --max-q 15 --mode episodes
+
+=== Running multimultiDDM analysis ===
+Completed in 3.97 seconds
+Found 45 ISF files
+
+=== Running fitting ===
+Completed in 0.63 seconds
+
+=== Pipeline Summary ===
+Total time: 4.60s (Analysis: 3.97s, Fitting: 0.63s)
+Processing speed: 195.60 frames/second
+
+=== Output Files ===
+Fit parameters: ./output_episode*_scale*_fit_generic_exp.txt
+```
+
+This example shows how to:
+- Process a video file with 900 frames
+- Enable angle analysis with 4 angle sections
+- Perform curve fitting with a maximum of 15 q values
+- Use "episodes" processing mode
+- Skip plot generation for faster processing
+
+The GUI automatically constructs and executes the appropriate command-line parameters for `pipeline.py`.
 
 ## Pipeline Scripts Overview
 
