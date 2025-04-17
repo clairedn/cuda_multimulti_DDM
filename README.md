@@ -42,7 +42,7 @@ The simplest way to run the pipeline is using the interactive command-line tool 
     ```bash
     python gui.py
     ```
-3.  **Follow the prompts:** The script will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
+3.  **Follow the prompts:** It will guide you through providing paths to the video and parameter files, setting the number of frames, and configuring all optional analysis, fitting, and plotting parameters. Pressing Enter at a prompt often accepts the default value shown in brackets `[]`.
 
 ## Pipeline Scripts Overview
 
