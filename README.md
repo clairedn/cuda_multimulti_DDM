@@ -118,9 +118,10 @@ The number of files depends on these parameters. For example, with:
 - 1 episode value (e.g., 100 frames)
 - 8 windows (total frames ÷ episode length)
 - 2 scale values (e.g., 512 and 1024)
+- 1 tile for scale 1024 (main scale)
 - 4 tiles for scale 512 (when using main scale of 1024)
 
-This would generate: 1 × 8 × (1 + 4) = 40 files.
+This would generate: 1 episode × 8 windows × (1 tile for scale 1024 + 4 tiles for scale 512) = 40 files.
 
 **Example ISF file list:**
 ```
