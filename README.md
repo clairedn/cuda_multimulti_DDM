@@ -139,7 +139,7 @@ echo -e "512\n1024" > scale.txt
     - Computes radial averages for each q-value
     - Computes sector averages for each angle segment when angular analysis is enabled
 
-12. Writes ISF results to files (fitting is not included now)
+12. Writes ISF results to files 
     - Separate file for each combination of episode, window index, scale, and tile index
     - Includes metadata about parameters used in analysis in the first two rows (lambda values and tau values (converted in seconds)) 
 
