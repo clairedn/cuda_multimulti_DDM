@@ -189,7 +189,7 @@ When using different processing modes:
 
 These fitting parameters provide quantitative information about the dynamics at different spatial scales, which can be related to physical properties of the sample.
 
-The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values (q = 2π/λ) are effectively sorted in descending order. Therefore, setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
+The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values (q = 2π/λ) are effectively sorted in descending order. So setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
 
 ## Processing Modes
 
