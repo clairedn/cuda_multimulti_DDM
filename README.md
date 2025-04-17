@@ -163,14 +163,40 @@ These files contain:
     - beta (β): Stretching exponent (describes deviation from simple exponential)
     - B: Baseline offset
 
-When using different processing modes:
-- `individual`: Each ISF file gets its own fitting file
-- `tiles`: Files for the same scale but different tiles are averaged before fitting
-- `episodes`: Files for the same window size but different indices are averaged before fitting
+## Processing Modes
 
-These fitting parameters provide quantitative information about the dynamics at different spatial scales, which can be related to physical properties of the sample.
+When using `fitting.py` (either directly or through the pipeline), there are three different processing modes that determine how data files are combined before fitting:
 
-The `--max-q` parameter (default: 20) controls how many q values are included in the fitting process. Note that lambda values are sorted in ascending order, while the corresponding q values (q = 2π/λ) are effectively sorted in descending order. Therefore, setting `--max-q 15` selects the 15 largest q values (corresponding to the 15 smallest lambda values) for fitting. This is useful when you want to focus on smaller spatial scales (higher q values) or reduce computational load while retaining the most relevant dynamics information.
+### 1. `individual` Mode (Default Mode)
+- **Working Principle**: Each ISF file is processed individually without any averaging
+- **File Processing**: Generates an independent fitting file for each ISF file
+- **Use Case**: When you need to preserve all details and analyze the unique dynamic properties of each time window and spatial region
+- **Output File Count**: Same as the number of input ISF files
+
+### 2. `tiles` Mode
+- **Working Principle**: Averages ISF files with the same scale but different tile positions
+- **File Processing**: Combines and averages all tile data from the same scale before fitting
+- **Averaging Strategy**: Groups by `episode<value>-<index>_scale<value>`, ignoring tile index differences
+- **Use Case**: When your sample is spatially homogeneous and you want to reduce spatial sampling noise
+- **Output File Count**: `Number of time windows × Number of scale values`
+
+### 3. `episodes` Mode
+- **Working Principle**: Averages ISF files with the same window size (episode value) but different window indices
+- **File Processing**: Combines and averages all window index data with the same episode value before fitting
+- **Averaging Strategy**: Groups by `episode<value>_scale<value>-<index>`, ignoring window index differences
+- **Use Case**: When your sample is temporally stationary and you want to increase statistical reliability
+- **Output File Count**: `Number of window size values × Number of scale values × Number of tiles`
+
+### Choosing the Right Processing Mode
+
+- If your sample exhibits consistent dynamic properties throughout the observation time, `episodes` mode can provide better statistical averaging and reduce noise in fitting parameters.
+- If your sample is spatially homogeneous, `tiles` mode can provide cleaner averaged data.
+- If you want to preserve all temporal and spatial details, or if your sample is non-uniform in time or space, `individual` mode is most appropriate.
+
+You can select the processing mode through the GUI or using the command-line parameter `--mode`:
+```bash
+python pipeline.py --mode episodes ... other parameters ...
+```
 
 ## Input Files
 
