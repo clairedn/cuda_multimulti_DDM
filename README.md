@@ -150,7 +150,7 @@ The file format is:
 
 These raw ISF data files serve as input for the fitting process, which extracts dynamic parameters from the tau-dependent behavior at each q value.
 
-### 2. Fitting Parameter Files
+### 2. Fitting Output Files
 
 When fitting is enabled (`--fit` option), additional files are generated with the suffix `_fit_generic_exp.txt`:
 
@@ -164,12 +164,7 @@ These files contain:
 - A header describing the fitting model: `I(q,τ) = A(1-e^{-(Γτ)^β}) + B`
 - For each angle section (if enabled):
   - The angle description (center angle and range)
-  - A table of parameters:
-    - q (2π/λ): The spatial frequency (not a fitted parameter, but an index identifying which spatial scale the parameters below belong to)
-    - A: Amplitude parameter (related to the contrast of dynamic features)
-    - Gamma (Γ): Characteristic relaxation rate, inversely proportional to the characteristic time scale (τₒ = 1/Γ)
-    - beta (β): Stretching exponent (β=1 for simple exponential, β<1 for stretched, β>1 for compressed)
-    - B: Baseline offset (indicates non-zero baseline at long time delays)
+  - A table of parameters for each q value (see "Fitting Parameter Files" section below for detailed parameter descriptions)
 
 ## Fitting Parameter Files
 
@@ -315,7 +310,6 @@ When working with multi-GB video files, consider:
 1. Splitting analysis into episodes with manageable window sizes
 2. Using the benchmark mode for initial testing to verify memory usage before committing to full analysis
 3. Monitoring system memory usage during processing
-
 > **Note:** The advanced memory management options (`-C` for chunk size, `-Z` for disabling multi-stream processing, and `-G` for rolling purge) are currently available only when using the direct command-line interface with `multimultiDDM`. These options are not included in the interactive `gui.py` tool (can be added later if needed)
 
 ## Input Files
